@@ -5,7 +5,7 @@
 Para instalar o programa, basta clonar o repositório, instalar as dependências e executar o arquivo `main.py`:
 
 ```bash
-git clone
+git clone https://github.com/JohnAndante/virtual_scaler/
 cd virtual_scaler
 pip install -r requirements.txt
 python main.py
