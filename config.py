@@ -301,13 +301,13 @@ class Config:
 
         button_close = tk.Button(buttons_frame,
                                  text='Fechar',
-                                 command=lambda: self.window.destroy(),
+                                 command=self.window.destroy(),
                                  font=('Arial', 8),
                                  width=15, height=3)
         button_close.pack(side=tk.RIGHT, padx=5, pady=5)
         button_config = tk.Button(buttons_frame,
                                   text='Configurações',
-                                  command=lambda: self.create_config_window(),
+                                  command=self.create_config_window(),
                                   font=('Arial', 8),
                                   width=15, height=3)
         button_config.pack(side=tk.RIGHT, padx=5, pady=5)
