@@ -18,14 +18,18 @@ jobs:
       - run: ruff check .
 
   smoke:
-    runs-on: ubuntu-latest
+    # Roda em Windows (o alvo real da aplicação): tkinter já vem embutido no
+    # Python oficial, e o pystray usa o backend win32 em vez de conectar num
+    # display X11 (o que quebraria a importação num runner Linux headless).
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Instalar Tkinter (necessário pra importar config.py/tray.py)
-        run: sudo apt-get update && sudo apt-get install -y python3-tk
       - run: pip install -r requirements.txt
       - name: Verificar sintaxe
         run: python -m py_compile *.py

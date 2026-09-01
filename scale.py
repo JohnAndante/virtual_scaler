@@ -85,7 +85,10 @@ class Scale:
             self.serial = serial.Serial(porta_com, baud_rate, timeout=1)
         except serial.SerialException as e:
             logger.error(f"Erro ao abrir a porta COM {porta_com}: {e}")
-            messagebox.showerror("Erro", f"Erro ao abrir a porta COM {porta_com}. Certifique-se de que a porta está disponível e tente novamente.")
+            messagebox.showerror(
+                "Erro",
+                f"Erro ao abrir a porta COM {porta_com}. "
+                "Certifique-se de que a porta está disponível e tente novamente.")
             return 2
 
         logger.info("Porta COM aberta com sucesso.")

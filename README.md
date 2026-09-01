@@ -1,7 +1,9 @@
 # virtual_scaler
- Balança virtual que envia informações constantemente para uma porta fixa
+
+Balança virtual que envia informações constantemente para uma porta fixa
 
 ## Instalação
+
 Para instalar o programa, basta clonar o repositório, instalar as dependências e executar o arquivo `main.py`:
 
 ```bash
@@ -60,9 +62,10 @@ Ao iniciar, também é criado um ícone na bandeja do sistema, onde o usuário p
 
 Um arquivo `virtual_scaler.log`, criado ao lado do executável, registra o que o programa está fazendo — útil para diagnosticar problemas, já que o programa roda sem console visível.
 
-
 ## Configurações
+
 No momento temos algumas opções de inicialização, como:
+
 - **Porta COM** - O programa irá escanear e apontar as portas disponíveis, para então o usuário escolher uma porta específica
 - **Baud Rate** - A taxa de transmissão de dados (no momento não tá fazendo a mínima diferença, essa informação não é utilizada na execução)
 - **Tipo de peso** - Define se o peso será uma quantidade fixa ou aleatória
@@ -72,8 +75,10 @@ No momento temos algumas opções de inicialização, como:
 - **Intervalo de envio** - Define o intervalo de tempo que o programa irá enviar as informações na porta serial
 
 ## Contribuição
+
 Caso queira contribuir com o projeto, basta fazer um fork do repositório e enviar um pull request com as alterações.
 
 ## Licença
+
 Esse projeto está sob a licença MIT.
 

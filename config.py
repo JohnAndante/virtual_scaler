@@ -217,19 +217,25 @@ class Config:
             label = tk.Label(row, text=self.config_labels[key], width=22, anchor='w', justify='left', font=('Arial', 8))
 
             if (key == 'comm_port'):
-                self.config_entries[key] = ttk.Combobox(row, values=self.get_available_com_ports(), textvariable=tk.StringVar(), width=5, font=('Arial', 8))
+                self.config_entries[key] = ttk.Combobox(
+                    row, values=self.get_available_com_ports(),
+                    textvariable=tk.StringVar(), width=5, font=('Arial', 8))
                 self.config_entries[key].set(self.config_data[key])
                 self.config_entries[key]['state'] = 'readonly'
                 self.config_entries[key].pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 
             elif (key == 'baud_rate'):
-                self.config_entries[key] = ttk.Combobox(row, values=self.config_acceptable_values[key], textvariable=tk.StringVar(), width=5, font=('Arial', 8))
+                self.config_entries[key] = ttk.Combobox(
+                    row, values=self.config_acceptable_values[key],
+                    textvariable=tk.StringVar(), width=5, font=('Arial', 8))
                 self.config_entries[key].set(self.config_data[key])
                 self.config_entries[key]['state'] = 'readonly'
                 self.config_entries[key].pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 
             elif (key == 'weight_type'):
-                self.config_entries[key] = ttk.Combobox(row, values=self.config_acceptable_values[key], textvariable=tk.StringVar(), width=5, font=('Arial', 8))
+                self.config_entries[key] = ttk.Combobox(
+                    row, values=self.config_acceptable_values[key],
+                    textvariable=tk.StringVar(), width=5, font=('Arial', 8))
                 self.config_entries[key].set(self.config_data[key])
                 self.config_entries[key]['state'] = 'readonly'
                 self.config_entries[key].pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
