@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    branches: [production]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ler versão
+        id: version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Verificar se a tag já existe
+        id: check_tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if git ls-remote --tags origin "refs/tags/v$VERSION" | grep -q .; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Já existe uma release para esta versão
+        if: steps.check_tag.outputs.exists == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: echo "Tag v$VERSION já existe, nada a fazer. Bump o arquivo VERSION pra cortar uma nova release."
+
+      - uses: actions/setup-python@v5
+        if: steps.check_tag.outputs.exists == 'false'
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        if: steps.check_tag.outputs.exists == 'false'
+        run: pip install -r requirements.txt
+
+      - name: Build do executável
+        if: steps.check_tag.outputs.exists == 'false'
+        run: pyinstaller --onefile --noconsole -i icon.ico --add-data "icon.ico;." --add-data "VERSION;." -n "Virtual Scaler" main.py
+
+      - name: Extrair notas da versão a partir do CHANGELOG
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v version="$VERSION" '
+            $0 ~ ("^## \\[" version "\\]") {flag=1; next}
+            /^## \[/ {flag=0}
+            flag {print}
+          ' CHANGELOG.md > release_notes.md
+          cat release_notes.md
+
+      - name: Criar e publicar a tag
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Publicar release no GitHub
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease_flag=""
+          case "$VERSION" in
+            *-*) prerelease_flag="--prerelease" ;;
+          esac
+          gh release create "v$VERSION" "dist/Virtual Scaler.exe" \
+            --title "Virtual Scaler v$VERSION" \
+            --notes-file release_notes.md \
+            $prerelease_flag

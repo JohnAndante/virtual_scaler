@@ -7,6 +7,7 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-01
 ### Added
 - Item de menu "Reiniciar comunicação" na bandeja, para reiniciar a leitura da porta serial sem fechar o programa.
 - Arquivo `VERSION` como fonte única da versão exibida em "Sobre".
