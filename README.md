@@ -14,7 +14,7 @@ python main.py
 Para criar um executável, eu utilizei o `pyinstaller` com esses parâmetros:
 
 ```bash
-pyinstaller --onefile --noconsole -i icon.ico --add-data "icon.ico;." -n 'Virtual Scaler' main.py
+pyinstaller --onefile --noconsole -i icon.ico --add-data "icon.ico;." --add-data "VERSION;." -n 'Virtual Scaler' main.py
 ```
 
 ## Pré-requisitos
@@ -56,7 +56,9 @@ def formatar_peso(self, peso):
     return f"\x02{peso_str.rjust(5, '0')}\x03"
 ```
 
-Ao iniciar, também é criado um ícone na bandeja do sistema, onde o usuário pode acessar as configurações do programa, ler as configurações gravadas atualmente, ou fechar o programa.
+Ao iniciar, também é criado um ícone na bandeja do sistema, onde o usuário pode acessar as configurações do programa, reiniciar a comunicação com a balança (sem precisar fechar e abrir o programa), ler as configurações gravadas atualmente, ou fechar o programa.
+
+Um arquivo `virtual_scaler.log`, criado ao lado do executável, registra o que o programa está fazendo — útil para diagnosticar problemas, já que o programa roda sem console visível.
 
 
 ## Configurações

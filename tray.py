@@ -4,6 +4,8 @@ from pystray import MenuItem as item
 from pystray import Icon as icon_pys
 from PIL import Image
 
+from logger import logger
+
 class TrayIcon:
     def __init__(self, image_path, scale_instance):
         self.image_path = image_path
@@ -12,38 +14,41 @@ class TrayIcon:
 
 
     def show_icon(self):
-        print("Mostrando o icon")
+        logger.info("Mostrando o icon")
         self.icon.run_detached()
-        print("Icon mostrado")
+        logger.info("Icon mostrado")
         return self.icon
 
     def exit_icon(self):
-        print("Escondendo o icon")
+        logger.info("Escondendo o icon")
         self.icon.stop()
-        print("Fechando a aplicação")
+        logger.info("Fechando a aplicação")
         os._exit(0)
 
+    def restart_scale(self):
+        logger.info("Reiniciando comunicação com a balança")
+        self.scale.restart_scale()
+
     def open_config_gui(self):
-        print("Recuperando configurações")
-        curr_config = config.Config('config.ini').config_data
-        print("Abrindo a GUI de configuração")
+        logger.info("Recuperando configurações")
         config.Config('config.ini').create_config_window()
-        print("GUI de configuração fechada")
+        logger.info("GUI de configuração fechada")
 
     def open_about_gui(self):
-        print("Abrindo a GUI de sobre")
+        logger.info("Abrindo a GUI de sobre")
         config.Config('config.ini').create_about_window()
-        print("GUI de sobre fechada")
+        logger.info("GUI de sobre fechada")
 
     def create_icon(self, image_path):
-        print("Criando o icon")
+        logger.info("Criando o icon")
         image = Image.open(image_path)
         menu = (
             item('Configurações', self.open_config_gui),
+            item('Reiniciar comunicação', self.restart_scale),
             item('Sobre', self.open_about_gui),
             item('Fechar aplicação', self.exit_icon),
             )
         icon = icon_pys("name", image, "Virtual Scaler", menu)
 
-        print("Icon criado")
+        logger.info("Icon criado")
         return icon

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+# Arquivos gerados em tempo de execução, não fazem parte do repositório
+config.ini
+virtual_scaler.log
+
+# Build do PyInstaller
+build/
+dist/
+*.spec
