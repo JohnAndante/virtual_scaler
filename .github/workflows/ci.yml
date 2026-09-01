@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff
+      - run: ruff check .
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar Tkinter (necessário pra importar config.py/tray.py)
+        run: sudo apt-get update && sudo apt-get install -y python3-tk
+      - run: pip install -r requirements.txt
+      - name: Verificar sintaxe
+        run: python -m py_compile *.py
+      - name: Smoke test de import
+        run: |
+          python - <<'PY'
+          import glob
+          import importlib
+
+          for path in sorted(glob.glob('*.py')):
+              module = path[:-3]
+              importlib.import_module(module)
+              print(f"OK: {module}")
+          PY
+
+  changelog-check:
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checar se CHANGELOG.md foi atualizado
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md atualizado."
+          else
+            echo "Este PR não atualizou o CHANGELOG.md."
+            echo "Adicione uma entrada em [Unreleased], ou marque o PR com a label 'skip-changelog' se não for necessário (ex.: typo, doc)."
+            exit 1
+          fi
