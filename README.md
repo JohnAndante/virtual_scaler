@@ -1,4 +1,7 @@
 # virtual_scaler
+
+[![CI](https://github.com/JohnAndante/virtual_scaler/actions/workflows/ci.yml/badge.svg)](https://github.com/JohnAndante/virtual_scaler/actions/workflows/ci.yml)
+
  Balança virtual que envia informações constantemente para uma porta fixa
 
 ## Instalação
@@ -72,7 +75,10 @@ No momento temos algumas opções de inicialização, como:
 - **Intervalo de envio** - Define o intervalo de tempo que o programa irá enviar as informações na porta serial
 
 ## Contribuição
-Caso queira contribuir com o projeto, basta fazer um fork do repositório e enviar um pull request com as alterações.
+Caso queira contribuir com o projeto, basta fazer um fork do repositório e enviar um pull request com as alterações contra a branch `main`. Todo PR passa por lint (`ruff`) e um smoke test no CI, e precisa atualizar o `CHANGELOG.md` (seção `[Unreleased]`), a menos que esteja marcado com a label `skip-changelog`.
+
+## Releases
+`main` é a branch de desenvolvimento. Releases são geradas a partir da branch `production`: ao abrir um PR de `main` para `production`, além do código, o `CHANGELOG.md` deve ter a seção `[Unreleased]` renomeada para a versão que está sendo lançada (ex.: `[0.3.1] - 2026-09-10`), e o arquivo `VERSION` atualizado com o mesmo número. Ao mergear esse PR, uma Action builda o executável do Windows, cria a tag `vX.Y.Z` e publica a Release no GitHub automaticamente, anexando o `.exe`.
 
 ## Licença
 Esse projeto está sob a licença MIT.
