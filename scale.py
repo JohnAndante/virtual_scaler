@@ -3,6 +3,8 @@ import time
 import serial
 from tkinter import messagebox
 
+from logger import logger
+
 config_bkp = {}
 
 class Scale:
@@ -33,13 +35,13 @@ class Scale:
 
     def stop_scale(self):
         if self.serial is not None:
-            print("\nEncerrando a recepção de dados...")
+            logger.info("Encerrando a recepção de dados...")
             self.serial.close()
             self.serial = None
             self.running = False
 
     def restart_scale(self):
-        print("\nParando a balança...")
+        logger.info("Parando a balança...")
         self.stop_scale()
         self.start_scale()
         return
@@ -58,7 +60,7 @@ class Scale:
             self.serial.close()
 
         try:
-            print("\nIniciando a recepção de dados...")
+            logger.info("Iniciando a recepção de dados...")
             porta_com = self.config['comm_port']
             baud_rate = int(self.config['baud_rate'])
             tipo_dado = self.config['weight_type']
@@ -66,58 +68,58 @@ class Scale:
             peso_min = int(self.config['weight_min'])
             peso_max = int(self.config['weight_max'])
 
-            print("Dados recebidos.---------------------")
-            print(f"Porta COM escolhida: {porta_com}")
-            print(f"Baud rate: {baud_rate}")
-            print(f"Tipo de dado: {tipo_dado}")
-            print(f"Peso fixo: {peso_fixo}")
-            print(f"Peso mínimo: {peso_min}")
-            print(f"Peso máximo: {peso_max}")
+            logger.info("Dados recebidos.---------------------")
+            logger.info(f"Porta COM escolhida: {porta_com}")
+            logger.info(f"Baud rate: {baud_rate}")
+            logger.info(f"Tipo de dado: {tipo_dado}")
+            logger.info(f"Peso fixo: {peso_fixo}")
+            logger.info(f"Peso mínimo: {peso_min}")
+            logger.info(f"Peso máximo: {peso_max}")
         except KeyError as e:
-            print(f"Erro ao recuperar dados do arquivo de configuração: {e}")
+            logger.error(f"Erro ao recuperar dados do arquivo de configuração: {e}")
             messagebox.showerror("Erro", f"Erro ao recuperar dados do arquivo de configuração: {e}")
             return 1
 
         try:
-            print("\nAbrindo porta COM...")
+            logger.info("Abrindo porta COM...")
             self.serial = serial.Serial(porta_com, baud_rate, timeout=1)
         except serial.SerialException as e:
-            print(f"Erro ao abrir a porta COM {porta_com}. Certifique-se de que a porta está disponível e tente novamente.")
+            logger.error(f"Erro ao abrir a porta COM {porta_com}: {e}")
             messagebox.showerror("Erro", f"Erro ao abrir a porta COM {porta_com}. Certifique-se de que a porta está disponível e tente novamente.")
             return 2
 
-        print("Porta COM aberta com sucesso.")
+        logger.info("Porta COM aberta com sucesso.")
 
-        print("\nEnviando dados...")
+        logger.info("Enviando dados...")
         while self.running:
             try:
                 if tipo_dado == 'fixed':
-                    print(f"Peso fixo: {peso_fixo}")
+                    logger.debug(f"Peso fixo: {peso_fixo}")
                     peso = peso_fixo
                 else:
                     peso = self.gerar_peso_aleatorio(peso_min, peso_max)
-                    print(f"Peso aleatório: {peso}")
+                    logger.debug(f"Peso aleatório: {peso}")
 
                 peso_formatado = self.formatar_peso(peso)
                 self.serial.write(peso_formatado.encode())
-                print(f"Dados enviados: {peso_formatado}")
+                logger.debug(f"Dados enviados: {peso_formatado}")
 
                 time.sleep(int(self.config['update_time']))
 
             except KeyboardInterrupt:
-                print("\nPrograma encerrado.")
+                logger.info("Programa encerrado.")
                 self.serial.close()
                 return 0
 
             except serial.SerialException as e:
-                print(f"Erro ao enviar dados: {e}")
-                messagebox.showerror("Erro", f"Erro ao enviar dados:\n{e}").run_detached()
+                logger.error(f"Erro ao enviar dados: {e}")
+                messagebox.showerror("Erro", f"Erro ao enviar dados:\n{e}")
                 self.serial.close()
                 return 0
 
             except Exception as e:
-                print(f"Erro inesperado: {e}")
-                messagebox.showerror("Erro", f"Erro inesperado:\n{e}").run_detached()
+                logger.error(f"Erro inesperado: {e}")
+                messagebox.showerror("Erro", f"Erro inesperado:\n{e}")
                 return 0
 
 

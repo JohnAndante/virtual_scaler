@@ -1,7 +1,6 @@
 import os
 import configparser
 import re
-import sys
 import serial
 import tkinter as tk
 from tkinter import messagebox
@@ -9,6 +8,9 @@ from tkinter import ttk
 
 import serial.tools
 import serial.tools.list_ports
+
+import paths
+from logger import logger
 
 
 class Config:
@@ -59,20 +61,25 @@ class Config:
     }
 
     def get_base_dir(self):
-            if getattr(sys, 'frozen', False):
-                base_dir =  sys._MEIPASS
-                return os.path.join(base_dir, 'icon.ico')
-            else:
-                base_dir =  os.path.dirname(__file__)
-                return os.path.join(base_dir, 'icon.ico')
+        return os.path.join(paths.get_bundle_dir(), 'icon.ico')
+
+    def get_version(self):
+        version_path = os.path.join(paths.get_bundle_dir(), 'VERSION')
+        try:
+            with open(version_path) as version_file:
+                return version_file.read().strip()
+        except OSError:
+            return 'dev'
 
     def __init__(self, config_file):
-        print("Iniciando configurações...")
+        logger.info("Iniciando configurações...")
+        if not os.path.isabs(config_file):
+            config_file = os.path.join(paths.get_app_dir(), config_file)
         self.config_file = config_file
-        print(f"Arquivo de configuração: {self.config_file}")
-        self.config_data = self.read_config(config_file)
-        print("Configurações lidas.")
-        print(self.config_data)
+        logger.info(f"Arquivo de configuração: {self.config_file}")
+        self.config_data = self.read_config(self.config_file)
+        logger.info("Configurações lidas.")
+        logger.info(self.config_data)
         self.window = None
         self.config_entries = {}
         self.get_available_com_ports()
@@ -84,24 +91,24 @@ class Config:
         config_data = {}
         if 'CUSTOM' not in config:
             try:
-                print("Arquivo de configuração inválido, criando novo")
+                logger.warning("Arquivo de configuração inválido, criando novo")
                 self.delete_file(config_file)
 
                 self.create_config()
                 config.read(config_file)
             except Exception as e:
-                print(f"Erro ao criar arquivo de configuração: {e}")
+                logger.error(f"Erro ao criar arquivo de configuração: {e}")
             return self.default_config
 
         is_valid = self.validate_data(config['CUSTOM'])
 
         if not is_valid:
-            print("Valores inválidos, recuperando valores padrão")
+            logger.warning("Valores inválidos, recuperando valores padrão")
             try:
                 self.delete_file(config_file)
                 self.create_config()
             except Exception as e:
-                print(f"Erro ao criar arquivo de configuração: {e}")
+                logger.error(f"Erro ao criar arquivo de configuração: {e}")
             return self.default_config
 
         for key, value in config['CUSTOM'].items():
@@ -133,7 +140,7 @@ class Config:
             else:
                 entries_data[key] = value
 
-        print("ENTRIES DATA: ", entries_data)
+        logger.info(f"ENTRIES DATA: {entries_data}")
         is_valid = self.validate_data(entries_data)
 
         if not is_valid:
@@ -153,43 +160,40 @@ class Config:
         return
 
     def validate_data(self, widget):
-        print("WIDGETO: ", widget)
+        logger.debug(f"Validando dados: {widget}")
 
         for key, value in widget.items():
-            print(f"Validando {key}: {value}")
-            if isinstance(widget, tk.Entry) or isinstance(widget, ttk.Combobox):
-                value = widget.get()
-
+            logger.debug(f"Validando {key}: {value}")
 
             if key not in self.config_keys:
                 return False
             if key == 'comm_port':
-                if not re.match('COM[0-9]+', value):
-                    print(f"Porta COM inválida: {value}")
+                if not re.match(r'^COM[0-9]+$', value):
+                    logger.warning(f"Porta COM inválida: {value}")
                     return False
             if key == 'baud_rate':
                 if value not in self.config_acceptable_values['baud_rate']:
-                    print(f"Baud rate inválido: {value}")
+                    logger.warning(f"Baud rate inválido: {value}")
                     return False
             if key == 'weight_type':
                 if value not in self.config_acceptable_values['weight_type']:
-                    print(f"Tipo de peso inválido: {value}")
+                    logger.warning(f"Tipo de peso inválido: {value}")
                     return False
             if key == 'weight_min':
-                if not re.match('[0-9]+', value):
-                    print(f"Peso mínimo inválido: {value}")
+                if not re.match(r'^[0-9]+$', value):
+                    logger.warning(f"Peso mínimo inválido: {value}")
                     return False
             if key == 'weight_max':
-                if not re.match('[0-9]+', value):
-                    print(f"Peso máximo inválido: {value}")
+                if not re.match(r'^[0-9]+$', value):
+                    logger.warning(f"Peso máximo inválido: {value}")
                     return False
             if key == 'weight_fixed':
-                if not re.match('[0-9]+', value):
-                    print(f"Peso fixo inválido: {value}")
+                if not re.match(r'^[0-9]+$', value):
+                    logger.warning(f"Peso fixo inválido: {value}")
                     return False
             if key == 'update_time':
-                if not re.match('[0-9]+', value):
-                    print(f"Tempo de atualização inválido: {value}")
+                if not re.match(r'^[0-9]+$', value):
+                    logger.warning(f"Tempo de atualização inválido: {value}")
                     return False
         return True
 
@@ -251,7 +255,7 @@ class Config:
                 self.config_entries[key].pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 
             else:
-                print(f"Erro ao criar campo para a chave {key}")
+                logger.error(f"Erro ao criar campo para a chave {key}")
                 continue
 
             row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
@@ -283,7 +287,7 @@ class Config:
         self.window.title('Sobre')
         self.window.geometry('300x300')
 
-        main_frame = tk.LabelFrame(self.window, text='Virtual Scaler v0.0.2', bd=2, font=('Arial', 9))
+        main_frame = tk.LabelFrame(self.window, text=f'Virtual Scaler v{self.get_version()}', bd=2, font=('Arial', 9))
         main_frame.pack(fill='both', expand='yes', padx=10, pady=10)
 
         for key in self.config_keys:
@@ -301,13 +305,13 @@ class Config:
 
         button_close = tk.Button(buttons_frame,
                                  text='Fechar',
-                                 command=self.window.destroy(),
+                                 command=lambda: self.destroy_window(),
                                  font=('Arial', 8),
                                  width=15, height=3)
         button_close.pack(side=tk.RIGHT, padx=5, pady=5)
         button_config = tk.Button(buttons_frame,
                                   text='Configurações',
-                                  command=self.create_config_window(),
+                                  command=lambda: self.create_config_window(),
                                   font=('Arial', 8),
                                   width=15, height=3)
         button_config.pack(side=tk.RIGHT, padx=5, pady=5)
